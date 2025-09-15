@@ -19,6 +19,14 @@
         </div>
         <h1>Available Cars</h1>
         <p class="subtitle">Browse the latest available cars ready to book.</p>
+
+        <c:if test="${not empty success}">
+          <p class="badge green">${success}</p>
+        </c:if>
+        <c:if test="${not empty error}">
+          <p class="badge red">${error}</p>
+        </c:if>
+
         <table class="table">
           <thead>
             <tr>
@@ -27,7 +35,8 @@
               <th>Model</th>
               <th>Year</th>
               <th>License Plate</th>
-              <th>Available</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -46,6 +55,47 @@
                     <c:otherwise
                       ><span class="badge red">Unavailable</span></c:otherwise
                     >
+                  </c:choose>
+                </td>
+                <td>
+                  <c:choose>
+                    <c:when test="${car.available}">
+                      <form
+                        class="form"
+                        method="post"
+                        action="/book"
+                        style="
+                          display: grid;
+                          grid-template-columns: 1fr 1fr auto;
+                          gap: 8px;
+                          align-items: center;
+                        "
+                      >
+                        <input type="hidden" name="carId" value="${car.id}" />
+                        <input
+                          class="input"
+                          type="date"
+                          name="startDate"
+                          required
+                        />
+                        <input
+                          class="input"
+                          type="date"
+                          name="endDate"
+                          required
+                        />
+                        <button class="button" type="submit">Book</button>
+                      </form>
+                    </c:when>
+                    <c:otherwise>
+                      <c:set var="availableMap" value="${nextAvailable}" />
+                      <span class="subtitle"
+                        >Available from
+                        <strong>
+                          <c:out value="${availableMap[car.id]}" />
+                        </strong>
+                      </span>
+                    </c:otherwise>
                   </c:choose>
                 </td>
               </tr>

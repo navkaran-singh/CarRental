@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -35,7 +37,6 @@ public class WebController {
 				if (futureBookings.isEmpty()) {
 					nextAvailableByCarId.put(car.getId(), today);
 				} else {
-					// Next availability is the day after the last overlapping/adjacent booking ends
 					LocalDate next = today;
 					for (var b : futureBookings) {
 						if (!b.getStartDate().isAfter(next)) {
@@ -48,6 +49,35 @@ public class WebController {
 		}
 		model.addAttribute("nextAvailable", nextAvailableByCarId);
 		return "home";
+	}
+
+	@PostMapping("/book")
+	public String book(@RequestParam("carId") Long carId,
+					  @RequestParam("startDate") String startDateStr,
+					  @RequestParam("endDate") String endDateStr,
+					  Model model) {
+		LocalDate start = LocalDate.parse(startDateStr);
+		LocalDate end = LocalDate.parse(endDateStr);
+		if (end.isBefore(start)) {
+			model.addAttribute("error", "End date must be on or after start date");
+			return home(model);
+		}
+		var conflicts = bookingRepository
+			.findByCarIdAndEndDateGreaterThanEqualOrderByStartDateAsc(carId, start);
+		for (var b : conflicts) {
+			boolean overlaps = !b.getStartDate().isAfter(end) && !b.getEndDate().isBefore(start);
+			if (overlaps) {
+				model.addAttribute("error", "Car already booked in selected range");
+				return home(model);
+			}
+		}
+		Booking booking = new Booking();
+		booking.setCarId(carId);
+		booking.setStartDate(start);
+		booking.setEndDate(end);
+		bookingRepository.save(booking);
+		model.addAttribute("success", "Booking confirmed");
+		return home(model);
 	}
 
 	@GetMapping("/register")
