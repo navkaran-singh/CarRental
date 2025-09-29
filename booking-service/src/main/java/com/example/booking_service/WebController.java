@@ -77,11 +77,31 @@ public class WebController {
 		return "home";
 	}
 
-	@GetMapping("/book/new")
-	public String newBooking(Model model) {
-		CarDto[] cars = restTemplate.getForObject("http://localhost:8081/api/cars", CarDto[].class);
-		model.addAttribute("cars", cars);
-		return "new-booking";
+	@GetMapping("/cars/new")
+	public String addCarForm() {
+		return "add-car";
+	}
+
+	@PostMapping("/cars")
+	public String createCar(@RequestParam("make") String make,
+							@RequestParam("model") String modelName,
+							@RequestParam("year") int year,
+							@RequestParam("licensePlate") String licensePlate,
+							Model model) {
+		Map<String, Object> car = new HashMap<>();
+		car.put("make", make);
+		car.put("model", modelName);
+		car.put("year", year);
+		car.put("licensePlate", licensePlate);
+		car.put("available", true);
+		try {
+			restTemplate.postForObject("http://localhost:8081/api/cars", car, String.class);
+			model.addAttribute("success", "Car added successfully");
+			return home(model);
+		} catch (RestClientException ex) {
+			model.addAttribute("error", "Failed to add car: " + ex.getMessage());
+			return "add-car";
+		}
 	}
 
 	@PostMapping("/book")

@@ -24,7 +24,7 @@ prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
           <div class="brand">Car Rental</div>
           <div class="nav">
             <a href="/">Home</a>
-            <a href="/book/new">New Booking</a>
+            <a href="/cars/new">Add Car</a>
             <a href="/register">Register</a>
             <a href="/login">Login</a>
           </div>
