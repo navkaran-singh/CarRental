@@ -38,6 +38,13 @@ public class WebController {
 		if (cars != null) {
 			for (CarDto car : cars) {
 				if (car == null) continue;
+                var allBookings = bookingRepository.findByCarIdOrderByStartDateAsc(car.getId());
+                LocalDate maxEndAcrossAll = null;
+                for (var b : allBookings) {
+                    if (maxEndAcrossAll == null || b.getEndDate().isAfter(maxEndAcrossAll)) {
+                        maxEndAcrossAll = b.getEndDate();
+                    }
+                }
                 var futureBookings = bookingRepository
                     .findByCarIdAndEndDateGreaterThanEqualOrderByStartDateAsc(car.getId(), today);
                 boolean hasAny = !futureBookings.isEmpty();
@@ -48,11 +55,7 @@ public class WebController {
                 } else {
                     LocalDate next = today;
                     boolean bookedNow = false;
-                    LocalDate maxEnd = null;
                     for (var b : futureBookings) {
-                        if (maxEnd == null || b.getEndDate().isAfter(maxEnd)) {
-                            maxEnd = b.getEndDate();
-                        }
                         boolean overlapsToday = !b.getStartDate().isAfter(today) && !b.getEndDate().isBefore(today);
                         if (overlapsToday) {
                             bookedNow = true;
@@ -64,10 +67,10 @@ public class WebController {
                     nextAvailableByCarId.put(car.getId(), next);
                     isBookedToday.put(car.getId(), bookedNow);
                     isUnavailable.put(car.getId(), true);
-                    if (maxEnd != null) {
-                        availableFromDisplay.put(car.getId(), maxEnd);
-                    }
-				}
+                }
+                if (maxEndAcrossAll != null) {
+                    availableFromDisplay.put(car.getId(), maxEndAcrossAll);
+                }
 			}
 		}
 		model.addAttribute("nextAvailable", nextAvailableByCarId);
