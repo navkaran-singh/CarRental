@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CarDto {
-	private Long id;
+    private String id;
 	private String make;
 	private String model;
 	private int year;

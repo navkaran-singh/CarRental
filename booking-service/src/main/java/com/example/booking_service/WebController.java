@@ -27,13 +27,13 @@ public class WebController {
 		CarDto[] cars = restTemplate.getForObject("http://localhost:8081/api/cars", CarDto[].class);
 		model.addAttribute("cars", cars);
 
-		Map<Long, LocalDate> nextAvailableByCarId = new HashMap<>();
+        Map<String, LocalDate> nextAvailableByCarId = new HashMap<>();
 		LocalDate today = LocalDate.now();
 		if (cars != null) {
 			for (CarDto car : cars) {
 				if (car == null) continue;
-				var futureBookings = bookingRepository
-					.findByCarIdAndEndDateGreaterThanEqualOrderByStartDateAsc(car.getId(), today);
+                var futureBookings = bookingRepository
+                    .findByCarIdAndEndDateGreaterThanEqualOrderByStartDateAsc(car.getId(), today);
 				if (futureBookings.isEmpty()) {
 					nextAvailableByCarId.put(car.getId(), today);
 				} else {
@@ -52,7 +52,7 @@ public class WebController {
 	}
 
 	@PostMapping("/book")
-	public String book(@RequestParam("carId") Long carId,
+    public String book(@RequestParam("carId") String carId,
 					  @RequestParam("startDate") String startDateStr,
 					  @RequestParam("endDate") String endDateStr,
 					  Model model) {
@@ -72,7 +72,7 @@ public class WebController {
 			}
 		}
 		Booking booking = new Booking();
-		booking.setCarId(carId);
+        booking.setCarId(carId);
 		booking.setStartDate(start);
 		booking.setEndDate(end);
 		bookingRepository.save(booking);

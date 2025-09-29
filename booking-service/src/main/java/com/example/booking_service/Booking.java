@@ -1,18 +1,18 @@
 package com.example.booking_service;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDate;
 
-@Entity
+@Document(collection = "bookings")
 @Data
 public class Booking {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private Long carId; // Just the ID of the car
-    private Long userId; // The ID of the user making the booking
+    private String id;
+
+    private String carId;
+    private String userId;
     private LocalDate startDate;
     private LocalDate endDate;
 }

@@ -1,19 +1,19 @@
 package com.example.booking_service;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "app_user") // "user" can be a reserved keyword, so we use app_user
+@Document(collection = "users")
 @Data
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(unique = true)
+    private String id;
+
+    @Indexed(unique = true)
     private String username;
-    
+
     private String password;
-    private String role = "USER"; 
+    private String role = "USER";
 }
