@@ -24,6 +24,7 @@ prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
           <div class="brand">Car Rental</div>
           <div class="nav">
             <a href="/">Home</a>
+            <a href="/book/new">New Booking</a>
             <a href="/register">Register</a>
             <a href="/login">Login</a>
           </div>
@@ -71,12 +72,32 @@ prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
                     <c:choose>
                       <c:when test="${unavailable}">
                         <span class="badge red">Unavailable</span>
-                        <c:if test="${not empty nextAvailable[car.id]}">
-                          <span style="margin-left: 8px; color: #9ca3af"
-                            >Available from
-                            <strong>${nextAvailable[car.id]}</strong></span
+                        <c:choose>
+                          <c:when
+                            test="${not empty justBookedCarId && justBookedCarId == car.id}"
                           >
-                        </c:if>
+                            <span style="margin-left: 8px; color: #9ca3af">
+                              Available from
+                              <strong>${justBookedEndDate}</strong>
+                            </span>
+                          </c:when>
+                          <c:when
+                            test="${not empty availableFromDisplay[car.id]}"
+                          >
+                            <span style="margin-left: 8px; color: #9ca3af">
+                              Available from
+                              <strong>${availableFromDisplay[car.id]}</strong>
+                            </span>
+                          </c:when>
+                          <c:otherwise>
+                            <c:if test="${not empty nextAvailable[car.id]}">
+                              <span style="margin-left: 8px; color: #9ca3af">
+                                Available from
+                                <strong>${nextAvailable[car.id]}</strong>
+                              </span>
+                            </c:if>
+                          </c:otherwise>
+                        </c:choose>
                       </c:when>
                       <c:otherwise>
                         <span class="badge green">Available</span>

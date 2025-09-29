@@ -33,6 +33,7 @@ public class WebController {
         Map<String, LocalDate> nextAvailableByCarId = new HashMap<>();
         Map<String, Boolean> isBookedToday = new HashMap<>();
         Map<String, Boolean> isUnavailable = new HashMap<>();
+        Map<String, LocalDate> availableFromDisplay = new HashMap<>();
 		LocalDate today = LocalDate.now();
 		if (cars != null) {
 			for (CarDto car : cars) {
@@ -44,28 +45,43 @@ public class WebController {
 					nextAvailableByCarId.put(car.getId(), today);
 					isBookedToday.put(car.getId(), false);
                     isUnavailable.put(car.getId(), false);
-				} else {
-					LocalDate next = today;
+                } else {
+                    LocalDate next = today;
                     boolean bookedNow = false;
-					for (var b : futureBookings) {
+                    LocalDate maxEnd = null;
+                    for (var b : futureBookings) {
+                        if (maxEnd == null || b.getEndDate().isAfter(maxEnd)) {
+                            maxEnd = b.getEndDate();
+                        }
                         boolean overlapsToday = !b.getStartDate().isAfter(today) && !b.getEndDate().isBefore(today);
                         if (overlapsToday) {
                             bookedNow = true;
                         }
-						if (!b.getStartDate().isAfter(next)) {
-							next = b.getEndDate().plusDays(1);
-						}
-					}
-					nextAvailableByCarId.put(car.getId(), next);
+                        if (!b.getStartDate().isAfter(next)) {
+                            next = b.getEndDate().plusDays(1);
+                        }
+                    }
+                    nextAvailableByCarId.put(car.getId(), next);
                     isBookedToday.put(car.getId(), bookedNow);
                     isUnavailable.put(car.getId(), true);
+                    if (maxEnd != null) {
+                        availableFromDisplay.put(car.getId(), maxEnd);
+                    }
 				}
 			}
 		}
 		model.addAttribute("nextAvailable", nextAvailableByCarId);
         model.addAttribute("isBookedToday", isBookedToday);
         model.addAttribute("isUnavailable", isUnavailable);
+        model.addAttribute("availableFromDisplay", availableFromDisplay);
 		return "home";
+	}
+
+	@GetMapping("/book/new")
+	public String newBooking(Model model) {
+		CarDto[] cars = restTemplate.getForObject("http://localhost:8081/api/cars", CarDto[].class);
+		model.addAttribute("cars", cars);
+		return "new-booking";
 	}
 
 	@PostMapping("/book")
@@ -110,6 +126,10 @@ public class WebController {
             model.addAttribute("error", "Booking saved but failed to update car availability. Please refresh.");
             return home(model);
         }
+
+        // Force the view to show the user's selected end date for this car on the next render
+        model.addAttribute("justBookedCarId", carId);
+        model.addAttribute("justBookedEndDate", end);
 
 		model.addAttribute("success", "Booking confirmed");
 		return home(model);
