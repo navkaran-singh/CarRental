@@ -1,0 +1,17 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: car-service-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/cars/**
+        - id: booking-service-route
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/auth/**
+            - Path=/api/bookings/**
